@@ -130,12 +130,12 @@ function tradfri_groupUpdated(group) {
 
 app.listen(process.env.PORT, function() {
  console.log('Listening on port ' + process.env.PORT);
- tradfri.connect(process.env.APIUSER, process.env.APIKEY)
-        .then(() => {
-          tradfri.on("device updated", tradfri_deviceUpdated)
-                 .on("device removed", tradfri_deviceRemoved)
-                 .observeDevices();
-          tradfri.on("group updated", tradfri_groupUpdated)
-                 .observeGroupsAndScenes();
-        });
+//  tradfri.connect(process.env.APIUSER, process.env.APIKEY)
+//         .then(() => {
+//           tradfri.on("device updated", tradfri_deviceUpdated)
+//                  .on("device removed", tradfri_deviceRemoved)
+//                  .observeDevices();
+//           tradfri.on("group updated", tradfri_groupUpdated)
+//                  .observeGroupsAndScenes();
+//         });
 });
