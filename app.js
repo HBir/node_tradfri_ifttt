@@ -81,13 +81,13 @@ function executeCommand(id, command, state) {
   for (var groupId in groups) {
     var group = groups[groupId];
     if (group.name.toLowerCase() == id) {
-      // tradfri.operateGroup(group, {onOff: state == "on"});
+      tradfri.operateGroup(group, {onOff: state == "on"});
       for (var deviceId of group.deviceIDs) {
         var bulb = lightbulbs[deviceId];
         if (bulb) { // skip non-bulbs
           console.log("for group:, ", command, bulb.name, "(" + bulb.instanceId + ")", state);
 
-          // performOperation(bulb, command, state);
+          performOperation(bulb, command, state);
         }
       }
       return;
@@ -99,7 +99,7 @@ function executeCommand(id, command, state) {
     if (bulb.name.toLowerCase().startsWith(id)) {
       console.log("for bulbid: ", command, bulb.name, "(" + bulb.instanceId + ")", state);
 
-      // performOperation(bulb, command, state);
+      performOperation(bulb, command, state);
       // we don't return, so we can apply to all bulbs that share a naming convention
     }
   }
