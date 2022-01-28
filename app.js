@@ -22,7 +22,12 @@ nodeCleanup(function (exitCode, signal) {
 const TradfriClient = tradfriLib.TradfriClient;
 var tradfri = new TradfriClient(process.env.HUBIP);
 
-app.post('/api/:command/:id/:state', function(req, res) {
+app.get('/health', function(req, res) {
+  console.log("health check");
+  res.send("up and running");
+});
+
+app.get('/api/:command/:id/:state', function(req, res) {
   if (req.query.password != process.env.PASS) {
     console.log("invalid password");
     res.status(403).send("wrong password");
@@ -76,11 +81,13 @@ function executeCommand(id, command, state) {
   for (var groupId in groups) {
     var group = groups[groupId];
     if (group.name.toLowerCase() == id) {
-      tradfri.operateGroup(group, {onOff: state == "on"});
+      // tradfri.operateGroup(group, {onOff: state == "on"});
       for (var deviceId of group.deviceIDs) {
         var bulb = lightbulbs[deviceId];
         if (bulb) { // skip non-bulbs
-          performOperation(bulb, command, state);
+          console.log("for group:, ", command, bulb.name, "(" + bulb.instanceId + ")", state);
+
+          // performOperation(bulb, command, state);
         }
       }
       return;
@@ -90,7 +97,9 @@ function executeCommand(id, command, state) {
   for (var bulbid in lightbulbs) {
     var bulb = lightbulbs[bulbid];
     if (bulb.name.toLowerCase().startsWith(id)) {
-      performOperation(bulb, command, state);
+      console.log("for bulbid: ", command, bulb.name, "(" + bulb.instanceId + ")", state);
+
+      // performOperation(bulb, command, state);
       // we don't return, so we can apply to all bulbs that share a naming convention
     }
   }
