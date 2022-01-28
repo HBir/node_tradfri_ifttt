@@ -65,10 +65,19 @@ function performOperation(bulb, command, state)
   }
 }
 
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
+function replaceAll(str, find, replace) {
+  return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+}
+
 function executeCommand(id, command, state) {
   // When the id gets passed as "the living room" turn it into "living room"
   // Also "all the" gets turned into all.
   id = id.replace(/the/g, "").trim().toLowerCase();
+  id = replaceAll(id, "_", " ");
 
   // If it's just "all" then we set it to the empty string, so we fall back
   // to setting every bulb (because every bulb name starts with empty string)
