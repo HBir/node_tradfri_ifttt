@@ -10,6 +10,13 @@ const tradfriLib = require("node-tradfri-client");
 const nodeCleanup = require('node-cleanup');
 const RGBColor = require('rgbcolor');
 
+const DEV = process.env.DEV
+const PORT = process.env.PORT
+const PASS = process.env.PASS
+const HUBIP = process.env.HUBIP
+const APIUSER = process.env.APIUSER
+const APIKEY = process.env.APIKEY
+
 nodeCleanup(function (exitCode, signal) {
   console.log("Cleaning up...");
   if (tradfri) {
@@ -20,7 +27,7 @@ nodeCleanup(function (exitCode, signal) {
 });
 
 const TradfriClient = tradfriLib.TradfriClient;
-var tradfri = new TradfriClient(process.env.HUBIP);
+var tradfri = new TradfriClient(HUBIP);
 
 app.get('/health', function(req, res) {
   console.log("health check");
@@ -28,7 +35,7 @@ app.get('/health', function(req, res) {
 });
 
 app.get('/api/:command/:id/:state', function(req, res) {
-  if (req.query.password != process.env.PASS) {
+  if (req.query.password != PASS) {
     console.log("invalid password");
     res.status(403).send("wrong password");
     return;
@@ -137,9 +144,9 @@ function tradfri_groupUpdated(group) {
     groups[group.instanceId] = group;
 }
 
-app.listen(process.env.PORT, function() {
- console.log('Listening on port ' + process.env.PORT);
- tradfri.connect(process.env.APIUSER, process.env.APIKEY)
+app.listen(PORT, function() {
+ console.log('Listening on port ' + PORT);
+ tradfri.connect(APIUSER, APIKEY)
         .then(() => {
           tradfri.on("device updated", tradfri_deviceUpdated)
                  .on("device removed", tradfri_deviceRemoved)
