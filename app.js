@@ -1,4 +1,3 @@
-require('dotenv').config();
 
 const fs = require('fs');
 const express = require('express');
@@ -10,12 +9,10 @@ const tradfriLib = require("node-tradfri-client");
 const nodeCleanup = require('node-cleanup');
 const RGBColor = require('rgbcolor');
 
-const DEV = process.env.DEV
-const PORT = process.env.PORT
-const PASS = process.env.PASS
-const HUBIP = process.env.HUBIP
-const APIUSER = process.env.APIUSER
-const APIKEY = process.env.APIKEY
+const { DEV, PORT, PASS ,HUBIP ,APIUSER ,APIKEY } = require('./envfile')
+
+const TradfriClient = tradfriLib.TradfriClient;
+let tradfri = new TradfriClient(HUBIP);
 
 nodeCleanup(function (exitCode, signal) {
   console.log("Cleaning up...");
@@ -25,9 +22,6 @@ nodeCleanup(function (exitCode, signal) {
   }
   tradfri = undefined;
 });
-
-const TradfriClient = tradfriLib.TradfriClient;
-var tradfri = new TradfriClient(HUBIP);
 
 app.get('/health', function(req, res) {
   console.log("health check");
