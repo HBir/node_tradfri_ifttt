@@ -8,18 +8,18 @@ const {
   deviceUpdated,
   deviceRemoved,
   groupUpdated,
-} = require('./tradfri_handler');
+} = require('./src/tradfri_handler');
 
 // Copy envfile(copy_this).js and rename to envfile.js
 const {
   PORT, PASS, HUBIP, APIUSER, APIKEY,
-} = require('./envfile');
+} = require('./resources/envfile');
 
 const app = express();
 
 const { TradfriClient } = tradfriLib;
 
-const tradfri = new TradfriClient(HUBIP);
+let tradfri = new TradfriClient(HUBIP);
 
 nodeCleanup(() => {
   console.log('Cleaning up...');
@@ -27,6 +27,7 @@ nodeCleanup(() => {
     console.log('Destroying tradfri connection');
     tradfri.destroy();
   }
+  tradfri = undefined;
 });
 
 function sleep(ms) {
