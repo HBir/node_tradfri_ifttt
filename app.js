@@ -3,6 +3,7 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable camelcase */
 const express = require('express');
+const promiseRetry = require('promise-retry');
 
 const app = express();
 
@@ -119,6 +120,12 @@ function tradfri_groupUpdated(group) {
   groups[group.instanceId] = group;
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 app.get('/health', (req, res) => {
   console.log('health check');
   res.send('up and running');
@@ -145,15 +152,23 @@ app.get('/api/:command/:id/:state', (req, res) => {
   res.status(404).send('wrong command');
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Listening on port ${PORT}`);
 
-  tradfri.connect(APIUSER, APIKEY)
-    .then(() => {
-      tradfri.on('device updated', tradfri_deviceUpdated)
-        .on('device removed', tradfri_deviceRemoved)
-        .observeDevices();
-      tradfri.on('group updated', tradfri_groupUpdated)
-        .observeGroupsAndScenes();
-    });
+  await promiseRetry((retry, number) => tradfri.connect(APIUSER, APIKEY)
+    .catch(async (err) => {
+      console.log('[ERROR] Failed attempt number', number);
+      console.log(err);
+      await sleep(5000 * number);
+      if (number <= 1000) {
+        retry();
+      }
+      throw err;
+    }));
+
+  tradfri.on('device updated', tradfri_deviceUpdated)
+    .on('device removed', tradfri_deviceRemoved)
+    .observeDevices();
+  tradfri.on('group updated', tradfri_groupUpdated)
+    .observeGroupsAndScenes();
 });
