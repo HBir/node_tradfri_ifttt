@@ -97,8 +97,23 @@ function groupUpdated(group) {
   groups[group.instanceId] = group;
 }
 
-const getGroups = () => groups;
-const getLightbulbs = () => lightbulbs;
+const getGroups = () => Object.keys(groups).reduce((prev, key) => ({
+  [key]: {
+    name: groups[key].name,
+    onOff: groups[key].onOff,
+    deviceIDs: groups[key].deviceIDs,
+  },
+  ...prev,
+}), {});
+
+const getLightbulbs = () => Object.keys(lightbulbs).reduce((prev, key) => ({
+  [key]: {
+    name: lightbulbs[key].name,
+    alive: lightbulbs[key].alive,
+    lightList: lightbulbs[key].lightList,
+  },
+  ...prev,
+}), {});
 
 module.exports = {
   executeCommand,
