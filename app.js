@@ -7,8 +7,9 @@ const {
   deviceUpdated,
   deviceRemoved,
   groupUpdated,
+  groupRemoved,
   getGroups,
-  getLightbulbs,
+  getDeviecs,
 } = require('./src/tradfri_handler');
 
 // Copy envfile(copy_this).js and rename to envfile.js
@@ -36,15 +37,13 @@ nodeCleanup(() => {
 
 app.get('/health', async (req, res) => {
   console.log('health check');
-  const success = await tradfri.ping(10);
-  console.log(getGroups());
-  console.log(getLightbulbs());
-  res.send(JSON.stringify({
+  const success = await tradfri.ping(5);
+  res.send({
     serverRunning: true,
     gatewayConnected: success,
     groups: getGroups(),
-    lightbulbs: getLightbulbs(),
-  }));
+    devices: getDeviecs(),
+  });
 });
 
 app.get('/rebootGateway', async (req, res) => {
@@ -76,7 +75,6 @@ app.get('/api/:command/:id/:state', (req, res) => {
 
 app.listen(PORT, async () => {
   console.log(`Listening on port ${PORT}`);
-
   tradfri.on('ping failed', (failedPingCount) => console.log(`ping failed #${failedPingCount}`))
     // .on('ping succeeded', () => console.log('ping'))
     .on('connection alive', () => console.log('connection alive'))
@@ -94,6 +92,7 @@ app.listen(PORT, async () => {
     .observeNotifications();
 
   tradfri.on('group updated', groupUpdated)
+    .on('group removed', groupRemoved)
     .observeGroupsAndScenes();
   tradfri.on('device updated', deviceUpdated)
     .on('device removed', deviceRemoved)
