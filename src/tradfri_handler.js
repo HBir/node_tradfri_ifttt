@@ -97,8 +97,7 @@ function groupUpdated(group) {
   groups[group.instanceId] = group;
 }
 
-async function registerDevicesAndGroups(tradfri) {
-  const GatewayDetails = await tradfri.observeGateway();
+async function registerDevicesAndGroups(GatewayDetails) {
   console.log(GatewayDetails);
 }
 

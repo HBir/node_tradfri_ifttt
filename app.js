@@ -72,7 +72,7 @@ app.get('/api/:command/:id/:state', (req, res) => {
 app.listen(PORT, async () => {
   console.log(`Listening on port ${PORT}`);
 
-  tradfri.on('gateway updated', () => console.log('Gateway updated'))
+  tradfri
     .on('ping failed', (failedPingCount) => console.log(`ping failed #${failedPingCount}`))
     // .on('ping succeeded', () => console.log('ping'))
     .on('connection alive', () => console.log('connection alive'))
@@ -84,7 +84,9 @@ app.listen(PORT, async () => {
 
   await tradfri.connect(APIUSER, APIKEY);
 
-  await registerDevicesAndGroups(tradfri);
+  tradfri
+    .on('gateway updated', (GatewayDetails) => registerDevicesAndGroups(GatewayDetails))
+    .observeGateway();
 
   tradfri.on('rebooting', (reason) => console.log('Rebooting', reason))
     .on('internet connectivity changed', (connected) => console.log('internet connectivity changed connected:', connected))
