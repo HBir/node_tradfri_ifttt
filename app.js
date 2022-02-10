@@ -67,15 +67,15 @@ app.get('/api/:command/:id/:state', (req, res) => {
 
 app.listen(PORT, async () => {
   console.log(`Listening on port ${PORT}`);
-  const connection = await tradfri.connect(APIUSER, APIKEY);
-  console.log(tradfri.watcher);
-  tradfri.on('ping failed', console.log('ping failed'))
-    .on('ping succeeded', console.log('ping succeeded'))
-    .on('connection alive', console.log('connection alive'))
-    .on('connection lost', console.log('connection lost'))
-    .on('gateway offline', console.log('gateway offline'))
-    .on('give up', console.log('give up'))
-    .on('reconnecting', console.log('reconnecting'));
+  const connection = tradfri.connect(APIUSER, APIKEY);
+
+  // tradfri.on('ping failed', console.log('ping failed'))
+  //   .on('ping succeeded', console.log('ping succeeded'))
+  //   .on('connection alive', console.log('connection alive'))
+  //   .on('connection lost', console.log('connection lost'))
+  //   .on('gateway offline', console.log('gateway offline'))
+  //   .on('give up', console.log('give up'))
+  //   .on('reconnecting', console.log('reconnecting'));
 
   await connection;
   // await connection;
