@@ -7,7 +7,8 @@ const {
   deviceUpdated,
   deviceRemoved,
   groupUpdated,
-  registerDevicesAndGroups,
+  getGroups,
+  getLightbulbs,
 } = require('./src/tradfri_handler');
 
 // Copy envfile(copy_this).js and rename to envfile.js
@@ -36,9 +37,13 @@ nodeCleanup(() => {
 app.get('/health', async (req, res) => {
   console.log('health check');
   const success = await tradfri.ping(10);
+  console.log(getGroups());
+  console.log(getLightbulbs());
   res.send(JSON.stringify({
     serverRunning: true,
     gatewayConnected: success,
+    groups: getGroups(),
+    lightbulbs: getLightbulbs(),
   }));
 });
 
@@ -72,8 +77,7 @@ app.get('/api/:command/:id/:state', (req, res) => {
 app.listen(PORT, async () => {
   console.log(`Listening on port ${PORT}`);
 
-  tradfri
-    .on('ping failed', (failedPingCount) => console.log(`ping failed #${failedPingCount}`))
+  tradfri.on('ping failed', (failedPingCount) => console.log(`ping failed #${failedPingCount}`))
     // .on('ping succeeded', () => console.log('ping'))
     .on('connection alive', () => console.log('connection alive'))
     .on('connection lost', () => console.log('connection lost'))
@@ -84,17 +88,14 @@ app.listen(PORT, async () => {
 
   await tradfri.connect(APIUSER, APIKEY);
 
-  tradfri
-    .on('gateway updated', (GatewayDetails) => registerDevicesAndGroups(GatewayDetails))
-    .observeGateway();
-
   tradfri.on('rebooting', (reason) => console.log('Rebooting', reason))
     .on('internet connectivity changed', (connected) => console.log('internet connectivity changed connected:', connected))
     .on('firmware update available', (releaseNotes, priority) => console.log('firmware update available priority:', priority))
     .observeNotifications();
+
+  tradfri.on('group updated', groupUpdated)
+    .observeGroupsAndScenes();
   tradfri.on('device updated', deviceUpdated)
     .on('device removed', deviceRemoved)
     .observeDevices();
-  tradfri.on('group updated', groupUpdated)
-    .observeGroupsAndScenes();
 });

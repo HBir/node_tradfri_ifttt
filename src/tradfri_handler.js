@@ -77,7 +77,7 @@ function executeCommand(tradfri, idraw, command, state) {
 }
 
 function deviceUpdated(device) {
-  console.log('tradfri_deviceUpdated', device.instanceId, device.name);
+  console.log('deviceUpdated', device.instanceId, device.name);
   if (device.type === tradfriLib.AccessoryTypes.lightbulb) {
     // remember it
     lightbulbs[device.instanceId] = device;
@@ -86,25 +86,25 @@ function deviceUpdated(device) {
 
 function deviceRemoved(instanceId) {
   if (instanceId in lightbulbs) {
-    console.log('tradfri_deviceRemoved', instanceId, lightbulbs[instanceId].name);
+    console.log('deviceRemoved', instanceId, lightbulbs[instanceId].name);
     delete lightbulbs[instanceId];
   }
 }
 
 function groupUpdated(group) {
   // remember it
-  console.log('tradfri_groupUpdated', group.instanceId, group.name);
+  console.log('groupUpdated', group.instanceId, group.name);
   groups[group.instanceId] = group;
 }
 
-async function registerDevicesAndGroups(GatewayDetails) {
-  console.log(GatewayDetails);
-}
+const getGroups = () => groups;
+const getLightbulbs = () => lightbulbs;
 
 module.exports = {
   executeCommand,
   deviceUpdated,
   deviceRemoved,
   groupUpdated,
-  registerDevicesAndGroups,
+  getGroups,
+  getLightbulbs,
 };
