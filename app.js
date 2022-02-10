@@ -39,9 +39,13 @@ function sleep(ms) {
   });
 }
 
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
   console.log('health check');
-  res.send('up and running');
+  const success = await tradfri.ping(10);
+  res.send(JSON.stringify({
+    server: 'running',
+    gateway: success,
+  }));
 });
 
 app.get('/api/:command/:id/:state', (req, res) => {
@@ -67,18 +71,17 @@ app.get('/api/:command/:id/:state', (req, res) => {
 
 app.listen(PORT, async () => {
   console.log(`Listening on port ${PORT}`);
-  const connection = tradfri.connect(APIUSER, APIKEY);
 
   tradfri.on('ping failed', () => console.log('ping failed'))
-  //  .on('ping succeeded', () => console.log('ping succeeded'))
+    // .on('ping succeeded', () => console.log('ping succeeded'))
     .on('connection alive', () => console.log('connection alive'))
     .on('connection lost', () => console.log('connection lost'))
     .on('gateway offline', () => console.log('gateway offline'))
     .on('give up', () => console.log('give up'))
     .on('reconnecting', () => console.log('reconnecting'))
-    .observeGateway()
-  
-  await connection;
+    .observeGateway();
+
+  await tradfri.connect(APIUSER, APIKEY);
 
   tradfri.on('device updated', deviceUpdated)
     .on('device removed', deviceRemoved)
