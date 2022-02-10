@@ -9,7 +9,7 @@ const {
   groupUpdated,
   groupRemoved,
   getGroups,
-  getDeviecs,
+  getDevices,
 } = require('./src/tradfri_handler');
 
 // Copy envfile(copy_this).js and rename to envfile.js
@@ -36,13 +36,15 @@ nodeCleanup(() => {
 });
 
 app.get('/health', async (req, res) => {
-  console.log('health check');
+  console.log('/health');
   const success = await tradfri.ping(5);
   res.send({
     serverRunning: true,
     gatewayConnected: success,
-    groups: getGroups(),
-    devices: getDeviecs(),
+    connected: {
+      groups: getGroups(tradfri),
+      devices: getDevices(tradfri),
+    },
   });
 });
 
@@ -64,8 +66,9 @@ app.get('/api/:command/:id/:state', (req, res) => {
       || command === 'dim'
       || command === 'temp'
       || command === 'color') {
-    executeCommand(tradfri, req.params.id, command, req.params.state);
-    res.send('done');
+    const result = executeCommand(tradfri, req.params.id, command, req.params.state);
+    console.log(result);
+    res.send(result);
     return;
   }
 

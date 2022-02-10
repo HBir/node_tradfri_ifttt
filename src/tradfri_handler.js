@@ -1,9 +1,6 @@
-// TODO: Fix these disabled rules
-/* eslint-disable no-restricted-syntax */
 const RGBColor = require('rgbcolor');
 const tradfriLib = require('node-tradfri-client');
 const _ = require('lodash');
-
 
 function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
@@ -15,14 +12,14 @@ function replaceAll(str, find, replace) {
 
 async function operate(tradfri, device, operation) {
   if (device.type === tradfriLib.AccessoryTypes.lightbulb) {
-    tradfri.operateLight(device, operation)
+    tradfri.operateLight(device, operation);
   } else if (device.type === tradfriLib.AccessoryTypes.plug && operation.onOff !== null) {
-    tradfri.operatePlug(device, operation)
+    tradfri.operatePlug(device, operation);
   }
 }
 
 function performOperation(tradfri, device, command, state) {
-  const currentState = (device.lightList || device.plugList)[0].onOff;
+  const currentState = (device.lightList || device.plugList)[0].onOff;
   console.log(command, device.name, `(${device.instanceId})`, currentState ? 'on' : 'off', '>', state);
   if (command === 'turn') {
     operate(tradfri, device, { onOff: state === 'on' });
@@ -37,17 +34,10 @@ function performOperation(tradfri, device, command, state) {
   }
 }
 
-const trimCommandString = (id) => {
-  // If it's just "all" then we set it to the empty string, so we fall back
-  // to setting every bulb (because every bulb name starts with empty string)
-  if (id === 'all') {
-    return '';
-  }
-  // When the id gets passed as "the_living_room" turn it into "living room"
-  // Also "all the" gets turned into all.
-  console.log(id);
-  return replaceAll(id.replace(/the/g, '').trim().toLowerCase(), '_', ' ');
-};
+const trimCommandString = (id) =>
+  (id === 'all')
+    ? ''
+    : replaceAll(id.replace(/the/g, '').trim().toLowerCase(), '_', ' ');
 
 function executeCommand(tradfri, idRaw, command, state) {
   const devices = _.pickBy(tradfri.devices, (device) =>
@@ -62,36 +52,25 @@ function executeCommand(tradfri, idRaw, command, state) {
     .filter((group) => groups[group].group.name.toLowerCase().includes(id));
 
   if (groupMatch.length >= 1 && groupMatch[0]) {
-    groupMatch.forEach( (groupId) => {
-      const group = groups[groupId].group;
-      // tradfri.operateGroup(group, { onOff: state === 'on' });
-      console.log('for group:', groupId);
+    groupMatch.forEach((groupId) => {
+      const { group } = groups[groupId];
+      tradfri.operateGroup(group, { onOff: state === 'on' });
       group.deviceIDs.forEach((deviceId) => {
         const device = devices[deviceId];
         if (device) {
           performOperation(tradfri, device, command, state);
         }
-      })
+      });
     });
-    return;
+    return `Updated ${groupMatch.length} group(s)`;
   }
 
   const deviceMatch = Object.keys(devices).filter((device) => devices[device].name.toLowerCase().startsWith(id));
-  for (const deviceID in deviceMatch) {
-    console.log(deviceID);
-    const device = devices[deviceID];
+  if (deviceMatch.length >= 1 && deviceMatch[0]) {
+    deviceMatch.forEach((deviceId) => performOperation(tradfri, devices[deviceId], command, state))
+    return `Updated ${deviceMatch.length} device(s)`;
   }
-
-  for (const bulbid in devices) {
-    console.log(bulbid);
-    const bulb = devices[bulbid];
-    if (bulb.name.toLowerCase().startsWith(id)) {
-      console.log('for bulbid: ', command, bulb.name, `(${bulb.instanceId})`, state);
-
-      performOperation(tradfri, bulb, command, state);
-      // we don't return, so we can apply to all bulbs that share a naming convention
-    }
-  }
+  return `No matches for ${id}`;
 }
 
 function deviceUpdated(device) {
@@ -124,15 +103,19 @@ function groupRemoved(group) {
   // delete groups[group.instanceId];
 }
 
-const getGroups = () => Object.keys(groups).reduce((prev, key) => ({
-  [key]: groups[key].name,
+const getGroups = (tradfri) =>  Object.keys(tradfri.groups).reduce((prev, key) => ({
+  [key]: tradfri.groups[key].group.name,
   ...prev,
 }), {});
 
-const getDevices = () => Object.keys(devices).reduce((prev, key) => ({
-  [key]: devices[key].name,
-  ...prev,
-}), {});
+const getDevices = (tradfri) => Object.keys(tradfri.devices).reduce((prev, key) => ({
+    ...prev,
+    [tradfriLib.AccessoryTypes[tradfri.devices[key].type]]: {
+      ...prev[tradfriLib.AccessoryTypes[tradfri.devices[key].type]],
+      [key]: tradfri.devices[key].name,
+    },
+  }
+), {});
 
 module.exports = {
   executeCommand,
