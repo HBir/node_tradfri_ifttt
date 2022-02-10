@@ -19,7 +19,11 @@ const app = express();
 
 const { TradfriClient } = tradfriLib;
 
-let tradfri = new TradfriClient(HUBIP);
+const options = {
+  watchConnection: false,
+};
+
+const tradfri = new TradfriClient(HUBIP, options);
 
 nodeCleanup(() => {
   console.log('Cleaning up...');
@@ -27,7 +31,6 @@ nodeCleanup(() => {
     console.log('Destroying tradfri connection');
     tradfri.destroy();
   }
-  tradfri = undefined;
 });
 
 function sleep(ms) {
@@ -64,18 +67,18 @@ app.get('/api/:command/:id/:state', (req, res) => {
 
 app.listen(PORT, async () => {
   console.log(`Listening on port ${PORT}`);
+  const connection = await tradfri.connect(APIUSER, APIKEY);
+  console.log(tradfri.watcher);
+  tradfri.on('ping failed', console.log('ping failed'))
+    .on('ping succeeded', console.log('ping succeeded'))
+    .on('connection alive', console.log('connection alive'))
+    .on('connection lost', console.log('connection lost'))
+    .on('gateway offline', console.log('gateway offline'))
+    .on('give up', console.log('give up'))
+    .on('reconnecting', console.log('reconnecting'));
 
-  await promiseRetry((retry, number) => tradfri.connect(APIUSER, APIKEY)
-    .catch(async (err) => {
-      console.log('[ERROR] Failed attempt number', number);
-      console.log(err);
-      await sleep(5000 * number);
-      if (number <= 1000) {
-        retry();
-      }
-      throw err;
-    }));
-
+  await connection;
+  // await connection;
   tradfri.on('device updated', deviceUpdated)
     .on('device removed', deviceRemoved)
     .observeDevices();
