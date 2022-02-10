@@ -97,9 +97,15 @@ function groupUpdated(group) {
   groups[group.instanceId] = group;
 }
 
+async function registerDevicesAndGroups(tradfri) {
+  const GatewayDetails = await tradfri.observeGateway();
+  console.log(GatewayDetails);
+}
+
 module.exports = {
   executeCommand,
   deviceUpdated,
   deviceRemoved,
   groupUpdated,
+  registerDevicesAndGroups,
 };

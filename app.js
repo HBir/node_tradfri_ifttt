@@ -7,6 +7,7 @@ const {
   deviceUpdated,
   deviceRemoved,
   groupUpdated,
+  registerDevicesAndGroups,
 } = require('./src/tradfri_handler');
 
 // Copy envfile(copy_this).js and rename to envfile.js
@@ -82,6 +83,8 @@ app.listen(PORT, async () => {
     .on('reconnecting', (attempt, max) => console.log(`reconnecting... #${attempt}${max === Infinity ? '' : `/${max}`}`));
 
   await tradfri.connect(APIUSER, APIKEY);
+
+  await registerDevicesAndGroups(tradfri);
 
   tradfri.on('rebooting', (reason) => console.log('Rebooting', reason))
     .on('internet connectivity changed', (connected) => console.log('internet connectivity changed connected:', connected))
