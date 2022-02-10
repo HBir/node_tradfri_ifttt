@@ -20,7 +20,7 @@ const app = express();
 const { TradfriClient } = tradfriLib;
 
 const options = {
-  watchConnection: false,
+  watchConnection: true,
 };
 
 const tradfri = new TradfriClient(HUBIP, options);
@@ -69,16 +69,17 @@ app.listen(PORT, async () => {
   console.log(`Listening on port ${PORT}`);
   const connection = tradfri.connect(APIUSER, APIKEY);
 
-  // tradfri.on('ping failed', console.log('ping failed'))
-  //   .on('ping succeeded', console.log('ping succeeded'))
-  //   .on('connection alive', console.log('connection alive'))
-  //   .on('connection lost', console.log('connection lost'))
-  //   .on('gateway offline', console.log('gateway offline'))
-  //   .on('give up', console.log('give up'))
-  //   .on('reconnecting', console.log('reconnecting'));
-
+  tradfri.on('ping failed', () => console.log('ping failed'))
+  //  .on('ping succeeded', () => console.log('ping succeeded'))
+    .on('connection alive', () => console.log('connection alive'))
+    .on('connection lost', () => console.log('connection lost'))
+    .on('gateway offline', () => console.log('gateway offline'))
+    .on('give up', () => console.log('give up'))
+    .on('reconnecting', () => console.log('reconnecting'))
+    .observeGateway()
+  
   await connection;
-  // await connection;
+
   tradfri.on('device updated', deviceUpdated)
     .on('device removed', deviceRemoved)
     .observeDevices();
