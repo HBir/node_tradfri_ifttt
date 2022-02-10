@@ -1,5 +1,4 @@
 const express = require('express');
-const promiseRetry = require('promise-retry');
 const tradfriLib = require('node-tradfri-client');
 const nodeCleanup = require('node-cleanup');
 
@@ -33,19 +32,19 @@ nodeCleanup(() => {
   }
 });
 
-function sleep(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
 app.get('/health', async (req, res) => {
   console.log('health check');
   const success = await tradfri.ping(10);
   res.send(JSON.stringify({
-    server: 'running',
-    gateway: success,
+    serverRunning: true,
+    gatewayConnected: success,
   }));
+});
+
+app.get('/rebootGateway', async (req, res) => {
+  console.log('Rebooting gateway...');
+  const success = await tradfri.ping(10);
+  res.send(JSON.stringify('reboot succesful'));
 });
 
 app.get('/api/:command/:id/:state', (req, res) => {
@@ -72,17 +71,23 @@ app.get('/api/:command/:id/:state', (req, res) => {
 app.listen(PORT, async () => {
   console.log(`Listening on port ${PORT}`);
 
-  tradfri.on('ping failed', () => console.log('ping failed'))
+  tradfri.on('gateway updated', (GatewayDetails) => console.log(GatewayDetails))
+    .on('ping failed', (failedPingCount) => console.log('ping failed #', failedPingCount))
     // .on('ping succeeded', () => console.log('ping succeeded'))
     .on('connection alive', () => console.log('connection alive'))
     .on('connection lost', () => console.log('connection lost'))
+    .on('connection failed', (attempt, max) => console.log(`connection failed ${attempt}/${max}`))
     .on('gateway offline', () => console.log('gateway offline'))
     .on('give up', () => console.log('give up'))
-    .on('reconnecting', () => console.log('reconnecting'))
+    .on('reconnecting', (attempt, max) => console.log(`reconnecting... ${attempt}/${max}`))
     .observeGateway();
 
   await tradfri.connect(APIUSER, APIKEY);
 
+  tradfri.on('rebooting', (reason) => console.log('Rebooting', reason))
+    .on('internet connectivity changed', (connected) => console.log('internet connectivity changed connected:', connected))
+    .on('firmware update available', (releaseNotes, priority) => console.log('firmware update available priority:', priority))
+    .observeNotifications();
   tradfri.on('device updated', deviceUpdated)
     .on('device removed', deviceRemoved)
     .observeDevices();
