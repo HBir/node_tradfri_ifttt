@@ -43,8 +43,15 @@ app.get('/health', async (req, res) => {
 
 app.get('/rebootGateway', async (req, res) => {
   console.log('Rebooting gateway...');
+  const reboot = await tradfri.rebootGateway();
+  if (!reboot) {
+    console.log('Reboot not initiated');
+    res.send(JSON.stringify('Reboot not initiated'));
+  }
+  console.log('Reboot started');
   const success = await tradfri.ping(10);
-  res.send(JSON.stringify('reboot succesful'));
+  console.log('Reboot succesful', success);
+  res.send('Reboot succesful', success);
 });
 
 app.get('/api/:command/:id/:state', (req, res) => {
