@@ -35,9 +35,9 @@ function performOperation(tradfri, device, command, state) {
 }
 
 const trimCommandString = (id) =>
-  (id === 'all')
+  ((id === 'all')
     ? ''
-    : replaceAll(id.replace(/the/g, '').trim().toLowerCase(), '_', ' ');
+    : replaceAll(id.replace(/the/g, '').trim().toLowerCase(), '_', ' '));
 
 function executeCommand(tradfri, idRaw, command, state) {
   const devices = _.pickBy(tradfri.devices, (device) =>
@@ -67,7 +67,7 @@ function executeCommand(tradfri, idRaw, command, state) {
 
   const deviceMatch = Object.keys(devices).filter((device) => devices[device].name.toLowerCase().startsWith(id));
   if (deviceMatch.length >= 1 && deviceMatch[0]) {
-    deviceMatch.forEach((deviceId) => performOperation(tradfri, devices[deviceId], command, state))
+    deviceMatch.forEach((deviceId) => performOperation(tradfri, devices[deviceId], command, state));
     return `Updated ${deviceMatch.length} device(s)`;
   }
   return `No matches for ${id}`;
@@ -75,46 +75,32 @@ function executeCommand(tradfri, idRaw, command, state) {
 
 function deviceUpdated(device) {
   console.log('deviceUpdated', device.instanceId, device.name);
-  // if (device.type === tradfriLib.AccessoryTypes.lightbulb ||
-  //   device.type === tradfriLib.AccessoryTypes.plug) {
-  //   devices[device.instanceId] = {
-  //     onOff: (device.lightList || device.plugList)[0].onOff,
-  //     dimmer: (device.lightList || device.plugList)[0].dimmer,
-  //     name: device.name,
-  //     deviceID: device.instanceId
-  //   };
-  // }
 }
 
 function deviceRemoved(instanceId) {
-  if (instanceId in devices) {
-    console.log('deviceRemoved', instanceId, devices[instanceId].name);
-    // delete devices[instanceId];
-  }
+  console.log('deviceRemoved', instanceId);
 }
 
 function groupUpdated(group) {
   console.log('groupUpdated', group.instanceId, group.name);
-  // groups[group.instanceId] = group;
 }
 
-function groupRemoved(group) {
-  console.log('groupRemoved', group.instanceId, group.name);
-  // delete groups[group.instanceId];
+function groupRemoved(instanceId) {
+  console.log('groupRemoved', instanceId);
 }
 
-const getGroups = (tradfri) =>  Object.keys(tradfri.groups).reduce((prev, key) => ({
+const getGroups = (tradfri) => Object.keys(tradfri.groups).reduce((prev, key) => ({
   [key]: tradfri.groups[key].group.name,
   ...prev,
 }), {});
 
 const getDevices = (tradfri) => Object.keys(tradfri.devices).reduce((prev, key) => ({
-    ...prev,
-    [tradfriLib.AccessoryTypes[tradfri.devices[key].type]]: {
-      ...prev[tradfriLib.AccessoryTypes[tradfri.devices[key].type]],
-      [key]: tradfri.devices[key].name,
-    },
-  }
+  ...prev,
+  [tradfriLib.AccessoryTypes[tradfri.devices[key].type]]: {
+    ...prev[tradfriLib.AccessoryTypes[tradfri.devices[key].type]],
+    [key]: tradfri.devices[key].name,
+  },
+}
 ), {});
 
 module.exports = {
