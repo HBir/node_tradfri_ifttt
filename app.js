@@ -72,15 +72,14 @@ app.listen(PORT, async () => {
   console.log(`Listening on port ${PORT}`);
 
   tradfri.on('gateway updated', () => console.log('Gateway updated'))
-    .on('ping failed', (failedPingCount) => console.log('ping failed #', failedPingCount))
-    // .on('ping succeeded', () => console.log('ping succeeded'))
+    .on('ping failed', (failedPingCount) => console.log(`ping failed #${failedPingCount}`))
+    // .on('ping succeeded', () => console.log('ping'))
     .on('connection alive', () => console.log('connection alive'))
     .on('connection lost', () => console.log('connection lost'))
-    .on('connection failed', (attempt, max) => console.log(`connection failed ${attempt}/${max}`))
+    .on('connection failed', (attempt, max) => console.log(`connection failed #${attempt}${max === Infinity ? '' : `/${max}`}`))
     .on('gateway offline', () => console.log('gateway offline'))
     .on('give up', () => console.log('give up'))
-    .on('reconnecting', (attempt, max) => console.log(`reconnecting... ${attempt}/${max}`))
-    .observeGateway();
+    .on('reconnecting', (attempt, max) => console.log(`reconnecting... #${attempt}${max === Infinity ? '' : `/${max}`}`));
 
   await tradfri.connect(APIUSER, APIKEY);
 
