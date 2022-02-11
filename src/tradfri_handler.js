@@ -20,7 +20,7 @@ async function operate(tradfri, device, operation) {
 
 function performOperation(tradfri, device, command, state) {
   const currentState = (device.lightList || device.plugList)[0].onOff;
-  console.log(command, device.name, `(${device.instanceId})`, currentState ? 'on' : 'off', '>', state);
+  log.info(command, device.name, `(${device.instanceId})`, currentState ? 'on' : 'off', '>', state);
   if (command === 'turn') {
     operate(tradfri, device, { onOff: state === 'on' });
   } else if (command === 'dim') {
@@ -52,7 +52,7 @@ function executeCommand(tradfri, idRaw, command, state) {
 
   const id = trimCommandString(idRaw);
 
-  console.log('executeCommand', command, id, state);
+  log.info('executeCommand', command, id, state);
   const groupMatch = Object.keys(groups)
     .filter((group) => groups[group].group.name.toLowerCase().includes(id));
 
@@ -82,7 +82,7 @@ function executeCommand(tradfri, idRaw, command, state) {
 }
 
 function deviceUpdated(tradfri, device) {
-  console.log('deviceUpdated', device.instanceId, device.name);
+  log.info('Device updated', device.instanceId, device.name);
   // Updating group onOff status when device status change
   Object.keys(tradfri.groups).forEach((key) => {
     const deviceInGroup = tradfri.groups[key].group.deviceIDs.find((deviceId) => deviceId === device.instanceId);
@@ -96,18 +96,6 @@ function deviceUpdated(tradfri, device) {
     }
     /* eslint-disable no-param-reassign */
   });
-}
-
-function deviceRemoved(instanceId) {
-  console.log('deviceRemoved', instanceId);
-}
-
-function groupUpdated(group) {
-  console.log('groupUpdated', group.instanceId, group.name);
-}
-
-function groupRemoved(instanceId) {
-  console.log('groupRemoved', instanceId);
 }
 
 const getGroups = (tradfri) => Object.keys(tradfri.groups).reduce((prev, key) => ({
@@ -136,13 +124,41 @@ async function getInfo(tradfri) {
   };
 }
 
+function getLevelString(level) {
+  switch (level) {
+    case 'error':
+      return '[ERROR]'.red
+      break;
+    case 'warn':
+      return '[WARN]'.yellow
+      break;
+    default:
+      return '[INFO]'.cyan
+      break;
+  }
+}
+
+function logMessage(level, ...args) {
+    console.log(
+      new Date().toLocaleString('sv-SE').grey,
+      getLevelString(level),
+      ...args
+    )
+}
+const log = {
+  info: (...args) => logMessage('info', ...args),
+  warn: (...args) => logMessage('warn', ...args),
+  error: (...args) => logMessage('error', ...args),
+
+}
+
+
+
 module.exports = {
   executeCommand,
   deviceUpdated,
-  deviceRemoved,
-  groupUpdated,
-  groupRemoved,
   getGroups,
   getDevices,
   getInfo,
+  log
 };
