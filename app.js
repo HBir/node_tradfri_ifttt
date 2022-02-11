@@ -1,6 +1,8 @@
 const express = require('express');
 const tradfriLib = require('node-tradfri-client');
 const nodeCleanup = require('node-cleanup');
+const { engine } = require('express-handlebars');
+const path = require('path');
 
 const {
   executeCommand,
@@ -8,8 +10,7 @@ const {
   deviceRemoved,
   groupUpdated,
   groupRemoved,
-  getGroups,
-  getDevices,
+  getInfo,
 } = require('./src/tradfri_handler');
 
 // Copy envfile(copy_this).js and rename to envfile.js
@@ -19,33 +20,30 @@ const {
 
 const app = express();
 
+app.engine('handlebars', engine());
+app.set('view engine', 'handlebars');
+app.set('views', path.join(__dirname, 'views'));
+
 const { TradfriClient } = tradfriLib;
-
-const options = {
-  watchConnection: true,
-};
-
+const options = { watchConnection: true };
 const tradfri = new TradfriClient(HUBIP, options);
 
-nodeCleanup(() => {
-  console.log('Cleaning up...');
-  if (tradfri) {
-    console.log('Destroying tradfri connection');
-    tradfri.destroy();
-  }
+/* Endpoints */
+app.get('/', async (req, res) => {
+  res.redirect('/dashboard');
+});
+
+app.get('/dashboard', async (req, res) => {
+  const data = await getInfo(tradfri);
+  res.render('dashboard', {
+    data,
+    PASS,
+  });
 });
 
 app.get('/health', async (req, res) => {
   console.log('/health');
-  const success = await tradfri.ping(5);
-  res.send({
-    serverRunning: true,
-    gatewayConnected: success,
-    connected: {
-      groups: getGroups(tradfri),
-      devices: getDevices(tradfri),
-    },
-  });
+  res.send(getInfo(tradfri));
 });
 
 app.get('/rebootGateway', async (req, res) => {
@@ -103,4 +101,12 @@ app.listen(PORT, async () => {
   tradfri.on('device updated', (device) => deviceUpdated(tradfri, device))
     .on('device removed', deviceRemoved)
     .observeDevices();
+});
+
+nodeCleanup(() => {
+  console.log('Cleaning up...');
+  if (tradfri) {
+    console.log('Destroying tradfri connection');
+    tradfri.destroy();
+  }
 });

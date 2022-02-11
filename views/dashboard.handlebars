@@ -1,0 +1,25 @@
+
+  {{#unless data.gatewayConnected}}
+    <h3>! Can't connect to gateway !</h3>
+  {{/unless}}
+
+  {{#if data.connected.devices.lightbulb}}
+    <h2>Lightbulbs</h2>
+    {{#each data.connected.devices.lightbulb}}
+      <div><a href="/api/turn/{{this}}/toggle?password={{../PASS}}">{{this}}</a></div>
+    {{/each}}
+  {{/if}}
+
+  {{#if data.connected.devices.plug}}
+    <h2>Plugs</h2>
+    {{#each data.connected.devices.plug}}
+      <div><a href="/api/turn/{{this}}/toggle?password={{../PASS}}">{{this}}</a></div>
+    {{/each}}
+  {{/if}}
+
+  {{#if data.connected.groups}}
+    <h2>Groups</h2>
+    {{#each data.connected.groups}}
+      <div><a href="/api/turn/{{this}}/toggle?password={{../PASS}}">{{this}}</a></div>
+    {{/each}}
+  {{/if}}

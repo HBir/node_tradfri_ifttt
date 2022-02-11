@@ -1,3 +1,4 @@
 node_modules
 .env
 envfile.js
+resources/mockdata.js

@@ -124,6 +124,18 @@ const getDevices = (tradfri) => Object.keys(tradfri.devices).reduce((prev, key) 
 }
 ), {});
 
+async function getInfo(tradfri) {
+  const success = await tradfri.ping(5);
+  return {
+    serverRunning: true,
+    gatewayConnected: success,
+    connected: {
+      groups: getGroups(tradfri),
+      devices: getDevices(tradfri),
+    },
+  };
+}
+
 module.exports = {
   executeCommand,
   deviceUpdated,
@@ -132,4 +144,5 @@ module.exports = {
   groupRemoved,
   getGroups,
   getDevices,
+  getInfo,
 };
