@@ -57,7 +57,6 @@ function executeCommand(tradfri, idRaw, command, state) {
     .filter((group) => groups[group].group.name.toLowerCase().includes(id));
 
   if (groupMatch.length >= 1 && groupMatch[0]) {
-    console.log(groupMatch);
     const updatedState = toggleState(state, groups[groupMatch[0]].group.onOff);
     groupMatch.forEach((groupId) => {
       const { group } = groups[groupId];
@@ -75,7 +74,8 @@ function executeCommand(tradfri, idRaw, command, state) {
 
   const deviceMatch = Object.keys(devices).filter((device) => devices[device].name.toLowerCase().startsWith(id));
   if (deviceMatch.length >= 1 && deviceMatch[0]) {
-    deviceMatch.forEach((deviceId) => performOperation(tradfri, devices[deviceId], command, state));
+    const updatedState = toggleState(state, devices[deviceMatch[0]].plugList[0].onOff);
+    deviceMatch.forEach((deviceId) => performOperation(tradfri, devices[deviceId], command, updatedState));
     return `Updated ${deviceMatch.length} device(s)`;
   }
   return `No matches for ${id}`;
