@@ -35,7 +35,14 @@ function performOperation(tradfri, device, command, state) {
 }
 
 const trimCommandString = (id) => ((id === 'all')
-    ? '' : replaceAll(id.replace(/the/g, '').trim().toLowerCase(), '_', ' '));
+  ? '' : replaceAll(id.replace(/the/g, '').trim().toLowerCase(), '_', ' '));
+
+function toggleState(state, onOff) {
+  if (state === 'toggle') {
+    return onOff ? 'off' : 'on';
+  }
+  return state;
+}
 
 function executeCommand(tradfri, idRaw, command, state) {
   const devices = _.pickBy(tradfri.devices, (device) =>
@@ -50,11 +57,11 @@ function executeCommand(tradfri, idRaw, command, state) {
     .filter((group) => groups[group].group.name.toLowerCase().includes(id));
 
   if (groupMatch.length >= 1 && groupMatch[0]) {
+    const updatedState = toggleState(state, groups[0].group.onOff);
     groupMatch.forEach((groupId) => {
       const { group } = groups[groupId];
 
-      const updatedState = state === 'toggle' ? (state = group.onOff ? 'off' : 'on') : state;
-      tradfri.operateGroup(group, { onOff: updatedState === 'on'  });
+      tradfri.operateGroup(group, { onOff: updatedState === 'on' });
       group.deviceIDs.forEach((deviceId) => {
         const device = devices[deviceId];
         if (device) {
@@ -79,13 +86,15 @@ function deviceUpdated(tradfri, device) {
   Object.keys(tradfri.groups).forEach((key) => {
     const deviceInGroup = tradfri.groups[key].group.deviceIDs.find((deviceId) => deviceId === device.instanceId);
     if (deviceInGroup && device.type === tradfriLib.AccessoryTypes.lightbulb) {
-        tradfri.groups[key].group.onOff = device.lightList[0].onOff;
-        tradfri.groups[key].group.dimmer = device.lightList[0].dimmer;
+      /* eslint-disable no-param-reassign */
+      tradfri.groups[key].group.onOff = device.lightList[0].onOff;
+      tradfri.groups[key].group.dimmer = device.lightList[0].dimmer;
     }
     if (deviceInGroup && device.type === tradfriLib.AccessoryTypes.plug) {
       tradfri.groups[key].group.onOff = device.plugList[0].onOff;
     }
-  })
+    /* eslint-disable no-param-reassign */
+  });
 }
 
 function deviceRemoved(instanceId) {
