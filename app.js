@@ -3,14 +3,10 @@ const tradfriLib = require('node-tradfri-client');
 const nodeCleanup = require('node-cleanup');
 const { engine } = require('express-handlebars');
 const path = require('path');
-const colors = require('colors');
 
-const {
-  executeCommand,
-  deviceUpdated,
-  getInfo,
-  log
-} = require('./src/tradfri_handler');
+const executeCommand = require('./src/execute_command');
+const { deviceUpdated, getInfo } = require('./src/tradfri_handler');
+const log = require('./src/logger');
 
 // Copy envfile(copy_this).js and rename to envfile.js
 const {
@@ -26,7 +22,6 @@ app.set('views', path.join(__dirname, 'views'));
 const { TradfriClient } = tradfriLib;
 const options = { watchConnection: true };
 const tradfri = new TradfriClient(HUBIP, options);
-
 
 /* Endpoints */
 app.get('/', async (req, res) => {
@@ -71,18 +66,18 @@ app.get('/api/:command/:id/:state', (req, res) => {
       return;
     }
 
-  log.info('unknown command', command);
-  res.status(404).send('wrong command');
-} catch (err) {
-  log.error(err)
-  res.send(err)
-}
+    log.info('unknown command', command);
+    res.status(404).send('wrong command');
+  } catch (err) {
+    log.error(err);
+    res.send(err);
+  }
 });
 
 app.listen(PORT, async () => {
   log.info(`Listening on port ${PORT}`);
-  tradfri.on('ping failed', (failedPingCount) => log.error(`ping failed #${failedPingCount}`))
-    // .on('ping succeeded', () => log.info('ping'))
+  tradfri.on('ping failed', (failedPingCount) => log.error(`Ping failed #${failedPingCount}`))
+    // .on('ping succeeded', () => log.info('Ping'))
     .on('connection alive', () => log.info('Connection alive'))
     .on('connection lost', () => log.warn('Connection lost'))
     .on('connection failed', (attempt, max) => log.warn(`Connection failed #${attempt}${max === Infinity ? '' : `/${max}`}`))
@@ -91,8 +86,8 @@ app.listen(PORT, async () => {
     .on('give up', () => log.warn('Give up'));
   try {
     await tradfri.connect(APIUSER, APIKEY);
-  } catch(err) {
-    log.error(err)
+  } catch (err) {
+    log.error(err);
   }
 
   tradfri.on('rebooting', (reason) => log.info('Rebooting', reason))
