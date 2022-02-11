@@ -57,7 +57,8 @@ function executeCommand(tradfri, idRaw, command, state) {
     .filter((group) => groups[group].group.name.toLowerCase().includes(id));
 
   if (groupMatch.length >= 1 && groupMatch[0]) {
-    const updatedState = toggleState(state, groups[0].group.onOff);
+    console.log(groupMatch);
+    const updatedState = toggleState(state, groups[groupMatch[0]].group.onOff);
     groupMatch.forEach((groupId) => {
       const { group } = groups[groupId];
 
