@@ -56,6 +56,6 @@ At `http://[IPADDRESS]:[PORT]/dashboard` there is a dashboard with toggle functi
 **color**
 * Hex color value
 
-## TODO
-Make a more functional dashboard
-Add testing
+## #TODO
+* Make a more functional dashboard
+* Add testing
