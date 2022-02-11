@@ -34,10 +34,8 @@ function performOperation(tradfri, device, command, state) {
   }
 }
 
-const trimCommandString = (id) =>
-  ((id === 'all')
-    ? ''
-    : replaceAll(id.replace(/the/g, '').trim().toLowerCase(), '_', ' '));
+const trimCommandString = (id) => ((id === 'all')
+    ? '' : replaceAll(id.replace(/the/g, '').trim().toLowerCase(), '_', ' '));
 
 function executeCommand(tradfri, idRaw, command, state) {
   const devices = _.pickBy(tradfri.devices, (device) =>
@@ -54,11 +52,13 @@ function executeCommand(tradfri, idRaw, command, state) {
   if (groupMatch.length >= 1 && groupMatch[0]) {
     groupMatch.forEach((groupId) => {
       const { group } = groups[groupId];
-      tradfri.operateGroup(group, { onOff: state === 'on' });
+
+      const updatedState = state === 'toggle' ? (state = group.onOff ? 'off' : 'on') : state;
+      tradfri.operateGroup(group, { onOff: updatedState === 'on'  });
       group.deviceIDs.forEach((deviceId) => {
         const device = devices[deviceId];
         if (device) {
-          performOperation(tradfri, device, command, state);
+          performOperation(tradfri, device, command, updatedState);
         }
       });
     });
@@ -73,8 +73,19 @@ function executeCommand(tradfri, idRaw, command, state) {
   return `No matches for ${id}`;
 }
 
-function deviceUpdated(device) {
+function deviceUpdated(tradfri, device) {
   console.log('deviceUpdated', device.instanceId, device.name);
+  // Updating group onOff status when device status change
+  Object.keys(tradfri.groups).forEach((key) => {
+    const deviceInGroup = tradfri.groups[key].group.deviceIDs.find((deviceId) => deviceId === device.instanceId);
+    if (deviceInGroup && device.type === tradfriLib.AccessoryTypes.lightbulb) {
+        tradfri.groups[key].group.onOff = device.lightList[0].onOff;
+        tradfri.groups[key].group.dimmer = device.lightList[0].dimmer;
+    }
+    if (deviceInGroup && device.type === tradfriLib.AccessoryTypes.plug) {
+      tradfri.groups[key].group.onOff = device.plugList[0].onOff;
+    }
+  })
 }
 
 function deviceRemoved(instanceId) {

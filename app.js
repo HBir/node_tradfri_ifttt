@@ -83,9 +83,9 @@ app.listen(PORT, async () => {
     .on('connection alive', () => console.log('connection alive'))
     .on('connection lost', () => console.log('connection lost'))
     .on('connection failed', (attempt, max) => console.log(`connection failed #${attempt}${max === Infinity ? '' : `/${max}`}`))
+    .on('reconnecting', (attempt, max) => console.log(`reconnecting... #${attempt}${max === Infinity ? '' : `/${max}`}`))
     .on('gateway offline', () => console.log('gateway offline'))
-    .on('give up', () => console.log('give up'))
-    .on('reconnecting', (attempt, max) => console.log(`reconnecting... #${attempt}${max === Infinity ? '' : `/${max}`}`));
+    .on('give up', () => console.log('give up'));
 
   await tradfri.connect(APIUSER, APIKEY);
 
@@ -96,8 +96,11 @@ app.listen(PORT, async () => {
 
   tradfri.on('group updated', groupUpdated)
     .on('group removed', groupRemoved)
+    .on('scene updated', (groupid, scene) => console.log('sceneUpdated', groupid, scene.name))
+    .on('scene removed', (groupId, instanceId) => console.log('sceneRemoved', groupId, instanceId))
     .observeGroupsAndScenes();
-  tradfri.on('device updated', deviceUpdated)
+
+  tradfri.on('device updated', (device) => deviceUpdated(tradfri, device))
     .on('device removed', deviceRemoved)
     .observeDevices();
 });
