@@ -1,14 +1,14 @@
 {
-  "name": "tradfri_ifttt",
-  "version": "1.0.0",
-  "description": "Backend to control IKEA TRADFRI from IFTTT",
+  "name": "tradfri_webhooks",
+  "version": "2.0.0",
+  "description": "Backend to control IKEA TRADFRI",
   "main": "app.js",
   "scripts": {
     "start": "node app.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/valenting/node_tradfri_ifttt.git"
+    "url": "git+https://github.com/HBir/tradfri_webhooks.git"
   },
   "keywords": [
     "raspberry",
@@ -21,12 +21,9 @@
     "google home",
     "google assistant"
   ],
-  "author": "Valentin Goșu",
+  "author": "Hannes Birgersson",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/valenting/node_tradfri_ifttt/issues"
-  },
-  "homepage": "https://github.com/valenting/node_tradfri_ifttt#readme",
+  "homepage": "https://github.com/HBir/tradfri_webhooks",
   "dependencies": {
     "body-parser": "^1.16.0",
     "colors": "^0.6.2",
@@ -39,7 +36,6 @@
     "node-cleanup": "^2.1.2",
     "node-tradfri-client": "^3.1.0",
     "path": "^0.12.7",
-    "promise-retry": "^2.0.1",
     "rgbcolor": "^1.0.1"
   },
   "devDependencies": {
