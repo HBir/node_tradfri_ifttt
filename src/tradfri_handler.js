@@ -23,14 +23,17 @@ const getGroups = (tradfri) => Object.keys(tradfri.groups).reduce((prev, key) =>
   ...prev,
 }), {});
 
-const getDevices = (tradfri) => Object.keys(tradfri.devices).reduce((prev, key) => ({
-  ...prev,
-  [tradfriLib.AccessoryTypes[tradfri.devices[key].type]]: {
-    ...prev[tradfriLib.AccessoryTypes[tradfri.devices[key].type]],
-    [key]: tradfri.devices[key].name,
-  },
-}
-), {});
+const getDevices = (tradfri) => {
+  console.log(JSON.stringify(tradfri.groups));
+  return Object.keys(tradfri.devices).reduce((prev, key) => ({
+    ...prev,
+    [tradfriLib.AccessoryTypes[tradfri.devices[key].type]]: {
+      ...prev[tradfriLib.AccessoryTypes[tradfri.devices[key].type]],
+      [key]: tradfri.devices[key].name,
+    },
+  }
+  ), {});
+};
 
 async function getInfo(tradfri) {
   const success = await tradfri.ping(5);
